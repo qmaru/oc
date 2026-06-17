@@ -1,0 +1,9 @@
+services:
+  oc:
+    build:
+      context: ..
+      dockerfile: oc-python/Dockerfile
+      platforms: []
+      tags:
+        - ${IMAGE_PREFIX:-docker.io}/agent/oc-python:3.13
+        - ${IMAGE_PREFIX:-docker.io}/agent/oc-python:latest

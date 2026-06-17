@@ -1,0 +1,9 @@
+services:
+  oc:
+    build:
+      context: ..
+      dockerfile: oc-node/Dockerfile
+      platforms: []
+      tags:
+        - ${IMAGE_PREFIX:-docker.io}/agent/oc-node:24
+        - ${IMAGE_PREFIX:-docker.io}/agent/oc-node:latest

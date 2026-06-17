@@ -1,0 +1,6 @@
+services:
+  oc:
+    build:
+      context: ..
+      dockerfile: oc-base/Dockerfile
+      platforms: []

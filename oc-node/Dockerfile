@@ -7,7 +7,7 @@ RUN apk add --no-cache ca-certificates
 COPY --from=ghcr.io/anomalyco/opencode:latest /usr/local/bin/opencode /usr/local/bin/
 
 COPY AGENTS.md opencode.json /workspace/
-COPY oc-python/.agents /workspace/.agents
+COPY oc-node/.agents /workspace/.agents
 
 ENV NODE_ENV=production
 

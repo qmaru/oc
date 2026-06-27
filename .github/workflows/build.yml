@@ -13,8 +13,58 @@ on:
     - cron: "0 2 * * 1"
 
 jobs:
+  check:
+    name: Check upstream digest
+    runs-on: ubuntu-latest
+
+    outputs:
+      update_needed: ${{ steps.compare.outputs.update_needed }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore digest cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .opencode_digest
+          key: opencode-digest
+
+      - name: Pull remote digest
+        id: pull
+        run: |
+          REMOTE_DIGEST=$(docker manifest inspect ghcr.io/anomalyco/opencode:latest \
+            | jq -r '.manifests[].digest' \
+            | head -n1)
+
+          echo "remote_digest=$REMOTE_DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Compare digest
+        id: compare
+        run: |
+          PREV_DIGEST=""
+
+          if [ -f .opencode_digest ]; then
+            PREV_DIGEST=$(cat .opencode_digest)
+          fi
+
+          if [ "$PREV_DIGEST" = "${{ steps.pull.outputs.remote_digest }}" ]; then
+            echo "update_needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "update_needed=true" >> "$GITHUB_OUTPUT"
+            echo "${{ steps.pull.outputs.remote_digest }}" > .opencode_digest
+          fi
+
+      - name: Save digest cache
+        if: steps.compare.outputs.update_needed == 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .opencode_digest
+          key: opencode-digest
+
   build:
-    name: Build
+    name: Build (${{ matrix.dir }})
+    needs: check
+    if: needs.check.outputs.update_needed == 'true'
     runs-on: ubuntu-latest
 
     strategy:
@@ -25,61 +75,29 @@ jobs:
           - oc-python
 
     steps:
-      - name: check out
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - name: restore digest cache
-        id: restore
-        uses: actions/cache@v6
-        with:
-          path: .opencode_digest
-          key: opencode-digest-${{ matrix.dir }}
-
-      - name: pull remote digest
-        id: pull_digest
-        run: |
-          REMOTE_DIGEST=$(docker manifest inspect ghcr.io/anomalyco/opencode:latest | jq -r '.manifests[].digest' | head -n 1)
-          echo "remote_digest=$REMOTE_DIGEST" >> $GITHUB_OUTPUT
-
-      - name: compare digest
-        id: compare
-        run: |
-          PREV_DIGEST=""
-          if [ -f ".opencode_digest" ]; then
-            PREV_DIGEST=$(cat .opencode_digest)
-          fi
-
-          REMOTE_DIGEST="${{ steps.pull_digest.outputs.remote_digest }}"
-
-          if [ "$PREV_DIGEST" = "$REMOTE_DIGEST" ]; then
-            echo "update_needed=false" >> $GITHUB_OUTPUT
-          else
-            echo "update_needed=true" >> $GITHUB_OUTPUT
-            echo "$REMOTE_DIGEST" > .opencode_digest
-          fi
-
-      - name: login to Github Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
-        if: steps.compare.outputs.update_needed == 'true'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: setup QEMU
+      - name: Setup QEMU
         uses: docker/setup-qemu-action@v4
-        if: steps.compare.outputs.update_needed == 'true'
+        with:
+          cache-image: false
 
-      - name: setup Buildx
+      - name: Setup Buildx
         uses: docker/setup-buildx-action@v4
-        if: steps.compare.outputs.update_needed == 'true'
 
-      - name: build and push
-        if: steps.compare.outputs.update_needed == 'true'
+      - name: Build and push
         env:
           IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
         run: |
-          cd ${{ matrix.dir }} && \
+          cd "${{ matrix.dir }}"
+
           docker buildx bake \
             --allow=fs.read=.. \
             -f compose.yaml \
@@ -87,25 +105,18 @@ jobs:
             --set '*.platform=linux/amd64,linux/arm64' \
             --push
 
-      - name: verify image
-        if: steps.compare.outputs.update_needed == 'true'
+      - name: Verify image
         env:
           IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
         run: |
           docker buildx imagetools inspect \
-            ${IMAGE_PREFIX}/agent/${{ matrix.dir }}:latest
+            "${IMAGE_PREFIX}/agent/${{ matrix.dir }}:latest"
 
-      - name: save digest cache
-        if: steps.compare.outputs.update_needed == 'true'
-        uses: actions/cache@v6
-        with:
-          path: .opencode_digest
-          key: opencode-digest-${{ matrix.dir }}
+  skipped:
+    name: Skip
+    needs: check
+    if: needs.check.outputs.update_needed != 'true'
+    runs-on: ubuntu-latest
 
-      - name: show update status
-        run: |
-          if [[ "${{ steps.compare.outputs.update_needed }}" == "true" ]]; then
-            echo "✅ oc image updated and pushed!"
-          else
-            echo "🚫 no changes detected, build skipped."
-          fi
+    steps:
+      - run: echo "🚫 No changes detected, build skipped."

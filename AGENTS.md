@@ -2,6 +2,14 @@
 
 All capabilities are provided exclusively through skills.
 
+## Instructions
+
+Before identifying or executing any skill, you must first read `README.md` to understand the current runtime environment and available tools.
+
+Do not assume any language, runtime, command, or tool is available unless documented in `README.md`.
+
+Prefer the language and tooling provided by the current environment.
+
 ## Rules
 
 1. Upon receiving a request, you must first identify the best-matching skill.

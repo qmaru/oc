@@ -7,6 +7,7 @@ RUN apk add --no-cache ca-certificates libstdc++
 COPY --from=ghcr.io/anomalyco/opencode:latest /usr/local/bin/opencode /usr/local/bin/
 
 COPY AGENTS.md opencode.json /workspace/
+COPY oc-python/README.md /workspace/README.md
 COPY oc-python/.agents /workspace/.agents
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

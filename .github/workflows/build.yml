@@ -9,6 +9,11 @@ on:
       - "oc-python/**"
       - ".github/workflows/**"
   workflow_dispatch:
+    inputs:
+      force:
+        description: Force build
+        type: boolean
+        default: false
   schedule:
     - cron: "0 2 * * 1"
 
@@ -64,7 +69,7 @@ jobs:
   build:
     name: Build (${{ matrix.dir }})
     needs: check
-    if: needs.check.outputs.update_needed == 'true'
+    if: needs.check.outputs.update_needed == 'true' || github.event.inputs.force == 'true'
     runs-on: ubuntu-latest
 
     strategy:

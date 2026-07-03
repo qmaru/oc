@@ -1,5 +1,8 @@
 FROM ghcr.io/anomalyco/opencode:latest
 
+LABEL org.opencontainers.image.title="opencode-base"
+LABEL org.opencontainers.image.description="Busybox image for opencode agents"
+
 USER root
 
 RUN apk add --no-cache curl jq ca-certificates tzdata

@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.description="Python 3.13 image for opencode agent
 
 WORKDIR /workspace
 
-RUN apk add --no-cache ca-certificates tzdata libstdc++
+RUN apk add --no-cache ca-certificates tzdata libstdc++ fontconfig
 
 COPY --from=ghcr.io/anomalyco/opencode:latest /usr/local/bin/opencode /usr/local/bin/
 

@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.description="Busybox image for opencode agents"
 
 USER root
 
-RUN apk add --no-cache curl jq ca-certificates tzdata
+RUN apk add --no-cache curl jq ca-certificates tzdata fontconfig
 
 COPY AGENTS.md opencode.json /workspace/
 COPY oc-base/README.md /workspace/README.md

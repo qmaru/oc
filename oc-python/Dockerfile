@@ -4,7 +4,7 @@ RUN apk add --no-cache curl upx
 
 RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
 
-RUN if [ "$TARGETARCH" != "arm64" ]; then \
+RUN if [ "${TARGETPLATFORM}" != "linux/arm64" ]; then \
       upx --best --lzma /root/.local/bin/rtk; \
     fi
 

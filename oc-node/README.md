@@ -4,4 +4,4 @@
 - POSIX shell
 - BusyBox utilities
 - Node.js 24
-- npm
+- npm 12 / npx 12

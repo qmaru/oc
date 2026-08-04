@@ -4,10 +4,6 @@ RUN apk add --no-cache curl upx
 
 RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
 
-RUN if [ "${TARGETPLATFORM}" != "linux/arm64" ]; then \
-      upx --best --lzma /root/.local/bin/rtk; \
-    fi
-
 FROM node:24-alpine
 
 LABEL org.opencontainers.image.title="opencode-node"

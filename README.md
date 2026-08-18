@@ -4,7 +4,7 @@ An agent framework built on top of opencode.
 
 ## Constraints
 
-* `AGENTS.md`: Skill-only task execution.
+* `AGENTS.md`: Skill-first, general-purpose task execution.
 * `opencode.json`: Default model and policies.
 
 ## .agents

@@ -31,7 +31,10 @@ RUN apk add --no-cache nodejs-24-minimal npm-12
 COPY oc-node/README.md README.md
 COPY oc-node/.agents .agents
 
-ENV NODE_ENV=production \
+ENV TZ=UTC \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    NODE_ENV=production \
     NPM_CONFIG_UPDATE_NOTIFIER=false \
     NPM_CONFIG_FUND=false
 

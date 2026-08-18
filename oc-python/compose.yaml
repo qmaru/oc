@@ -1,5 +1,7 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/main/schema/compose-spec.json
+
 services:
-  oc:
+  basic:
     image: ${IMAGE_PREFIX:-docker.io}/agent/oc-python:3.13
     environment:
       OPENCODE_DISABLE_MODELS_FETCH: true
@@ -7,8 +9,23 @@ services:
       NPM_CONFIG_REGISTRY: https://registry.npmmirror.com
       # API_BASE_URL: https://api.openai.com/v1
       # API_KEY: sk-xxxxxxxxx
-      # HTTP_PROXY: http://127.0.0.1:8080
-      # HTTPS_PROXY: http://127.0.0.1:8080
+      # HTTP_PROXY: http://
+
+  oc:
+    extends:
+      service: basic
+    tty: true
+    stdin_open: true
+    environment:
+      TERM: xterm-256color
     entrypoint:
       - opencode
-      - run
+
+  oc-server:
+    extends:
+      service: basic
+    init: true
+    container_name: oc-server
+    entrypoint:
+      - opencode
+      - serve

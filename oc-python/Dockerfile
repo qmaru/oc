@@ -34,7 +34,10 @@ COPY oc-python/.agents .agents
 RUN ln -sf /usr/bin/python3.13 /usr/bin/python \
     && ln -sf /usr/bin/pip3.13 /usr/bin/pip
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
+ENV TZ=UTC \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 

@@ -12,7 +12,9 @@ FROM cgr.dev/chainguard/wolfi-base AS runtime
 
 WORKDIR /workspace
 
-ENV TZ=UTC
+ENV TZ=UTC \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
 
 RUN apk add --no-cache ca-certificates tzdata fontconfig
 

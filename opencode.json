@@ -1,11 +1,17 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {},
-  "model": "opencode/deepseek-v4-flash-free",
-  "permission": {
-    "skill": {
-      "*": "allow",
-      "customize-opencode": "deny",
-    }
-  }
+  "model": "opencode/mimo-v2.5-free",
+  "permissions": [
+    {
+      "action": "skill",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "skill",
+      "resource": "customize-opencode",
+      "effect": "deny"
+    },
+  ]
 }

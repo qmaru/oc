@@ -17,6 +17,8 @@ Minimal runtime environment.
 
 + curl
 + jq
++ fd
++ rg
 
 ```sh
 cd oc-base

@@ -7,3 +7,6 @@ services:
       tags:
         - ${IMAGE_PREFIX:-docker.io}/agent/oc-node:24
         - ${IMAGE_PREFIX:-docker.io}/agent/oc-node:latest
+
+  oc-server:
+    network_mode: host

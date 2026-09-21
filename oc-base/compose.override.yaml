@@ -4,3 +4,6 @@ services:
       context: ..
       dockerfile: oc-base/Dockerfile
       platforms: []
+
+  oc-server:
+    network_mode: host

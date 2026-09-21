@@ -128,7 +128,8 @@ jobs:
             -f compose.yaml \
             -f compose.override.yaml \
             --set '*.platform=linux/amd64,linux/arm64' \
-            --set "*.tags=${IMAGE}:${VERSION},${IMAGE}:latest" \
+            --set "*.tags=${IMAGE}:${VERSION}" \
+            --set "*.tags+=${IMAGE}:latest" \
             --push
 
       - name: Verify image

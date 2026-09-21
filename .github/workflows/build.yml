@@ -19,52 +19,69 @@ on:
 
 jobs:
   check:
-    name: Check upstream digest
+    name: Check upstream version
     runs-on: ubuntu-latest
 
     outputs:
       update_needed: ${{ steps.compare.outputs.update_needed }}
+      version: ${{ steps.upstream.outputs.version }}
 
     steps:
       - uses: actions/checkout@v7
 
-      - name: Restore digest cache
+      - name: Restore version cache
         uses: actions/cache/restore@v6
         with:
-          path: .opencode_digest
-          key: opencode-digest
+          path: .opencode_version
+          key: opencode-version
 
-      - name: Pull remote digest
-        id: pull
+      - name: Get upstream version
+        id: upstream
         run: |
-          REMOTE_DIGEST=$(docker manifest inspect ghcr.io/anomalyco/opencode:latest \
-            | jq -r '.manifests[].digest' \
-            | head -n1)
+          VERSION=$(
+            git ls-remote --tags https://github.com/anomalyco/opencode.git \
+              | awk -F/ '{print $3}' \
+              | grep -E '^v2\.[0-9]+\.[0-9]+$' \
+              | sed 's/^v//' \
+              | sort -V \
+              | tail -1
+          )
 
-          echo "remote_digest=$REMOTE_DIGEST" >> "$GITHUB_OUTPUT"
-
-      - name: Compare digest
-        id: compare
-        run: |
-          PREV_DIGEST=""
-
-          if [ -f .opencode_digest ]; then
-            PREV_DIGEST=$(cat .opencode_digest)
+          if [ -z "$VERSION" ]; then
+            echo "Failed to determine upstream version"
+            exit 1
           fi
 
-          if [ "$PREV_DIGEST" = "${{ steps.pull.outputs.remote_digest }}" ]; then
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Upstream version: $VERSION"
+
+      - name: Compare version
+        id: compare
+        env:
+          VERSION: ${{ steps.upstream.outputs.version }}
+        run: |
+          PREV_VERSION=""
+
+          if [ -f .opencode_version ]; then
+            PREV_VERSION=$(cat .opencode_version)
+          fi
+
+          echo "Previous version: ${PREV_VERSION:-none}"
+          echo "Current version:  $VERSION"
+
+          if [ "$PREV_VERSION" = "$VERSION" ]; then
             echo "update_needed=false" >> "$GITHUB_OUTPUT"
           else
             echo "update_needed=true" >> "$GITHUB_OUTPUT"
-            echo "${{ steps.pull.outputs.remote_digest }}" > .opencode_digest
+            echo "$VERSION" > .opencode_version
           fi
 
-      - name: Save digest cache
+      - name: Save version cache
         if: steps.compare.outputs.update_needed == 'true'
         uses: actions/cache/save@v6
         with:
-          path: .opencode_digest
-          key: opencode-digest
+          path: .opencode_version
+          key: opencode-version
 
   build:
     name: Build (${{ matrix.dir }})
@@ -100,22 +117,28 @@ jobs:
       - name: Build and push
         env:
           IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+          VERSION: ${{ needs.check.outputs.version }}
         run: |
           cd "${{ matrix.dir }}"
+
+          IMAGE="${IMAGE_PREFIX}/agent/${{ matrix.dir }}"
 
           docker buildx bake \
             --allow=fs.read=.. \
             -f compose.yaml \
             -f compose.override.yaml \
             --set '*.platform=linux/amd64,linux/arm64' \
+            --set "*.tags=${IMAGE}:${VERSION},${IMAGE}:latest" \
             --push
 
       - name: Verify image
         env:
           IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+          VERSION: ${{ needs.check.outputs.version }}
         run: |
-          docker buildx imagetools inspect \
-            "${IMAGE_PREFIX}/agent/${{ matrix.dir }}:latest"
+          IMAGE="${IMAGE_PREFIX}/agent/${{ matrix.dir }}"
+          docker buildx imagetools inspect "${IMAGE}:${VERSION}"
+          docker buildx imagetools inspect "${IMAGE}:latest"
 
   skipped:
     name: Skip

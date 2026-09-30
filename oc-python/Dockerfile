@@ -18,6 +18,8 @@ COPY --from=build /root/.opencode/bin/opencode /usr/local/bin/opencode
 COPY AGENTS.md opencode.json ./
 COPY opencodex /usr/local/bin/opencodex
 
+RUN chmod +x /usr/local/bin/opencodex
+
 FROM runtime
 
 LABEL org.opencontainers.image.title="opencode-python"

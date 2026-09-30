@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+export)
+	shift
+
+	tmp="$(mktemp)"
+	trap 'rm -f "$tmp"' EXIT
+
+	opencode run "$@" --format json >"$tmp"
+
+	sid="$(jq -r 'select(.type == "step_start" and .sessionID != null) | .sessionID' "$tmp" | head -n1)"
+	[ -n "$sid" ] || {
+		echo "entrypoint: failed to get sessionID" >&2
+		exit 1
+	}
+	exec opencode session export "$sid"
+	;;
+*) exec opencode "$@" ;;
+esac

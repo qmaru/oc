@@ -16,6 +16,7 @@ RUN apk add --no-cache curl jq bash fd ripgrep ca-certificates tzdata fontconfig
 COPY --from=build /root/.opencode/bin/opencode /usr/local/bin/opencode
 
 COPY AGENTS.md opencode.json ./
+COPY opencodex /usr/local/bin/opencodex
 
 FROM runtime
 

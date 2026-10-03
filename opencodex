@@ -8,7 +8,9 @@ export)
 	tmp="$(mktemp)"
 	trap 'rm -f "$tmp"' EXIT
 
+	set +e
 	opencode run "$@" --format json >"$tmp"
+	set -e
 
 	sid="$(jq -r 'select(.type == "step_start" and .sessionID != null) | .sessionID' "$tmp" | head -n1)"
 	[ -n "$sid" ] || {

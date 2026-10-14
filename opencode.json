@@ -1,17 +1,4 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "provider": {},
-  "model": "opencode/mimo-v2.5-free",
-  "permissions": [
-    {
-      "action": "skill",
-      "resource": "*",
-      "effect": "allow"
-    },
-    {
-      "action": "skill",
-      "resource": "customize-opencode",
-      "effect": "deny"
-    },
-  ]
+  "model": "opencode/mimo-v2.6-flash-free"
 }

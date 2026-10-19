@@ -5,11 +5,17 @@ case "${1:-}" in
 export)
 	shift
 
+	debug=0
+	if [ "${1:-}" = "--debug" ]; then
+		debug=1
+		shift
+	fi
+
 	tmp="$(mktemp)"
 	trap 'rm -f "$tmp"' EXIT
 
 	set +e
-	if [ "${DEBUG:-0}" = 1 ]; then
+	if [ "$debug" = 1 ]; then
 		echo "opencodex: debug output enabled (JSONL)" >&2
 		opencode run "$@" --format json | tee "$tmp" >&2
 		status=${PIPESTATUS[0]}

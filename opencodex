@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -eu
 
 case "${1:-}" in
@@ -9,12 +9,19 @@ export)
 	trap 'rm -f "$tmp"' EXIT
 
 	set +e
-	opencode run "$@" --format json >"$tmp"
+	if [ "${DEBUG:-0}" = 1 ]; then
+		echo "opencodex: debug output enabled (JSONL)" >&2
+		opencode run "$@" --format json | tee "$tmp" >&2
+		status=${PIPESTATUS[0]}
+	else
+		opencode run "$@" --format json >"$tmp"
+		status=$?
+	fi
 	set -e
 
 	sid="$(jq -r 'select(.type == "step_start" and .sessionID != null) | .sessionID' "$tmp" | head -n1)"
 	[ -n "$sid" ] || {
-		echo "entrypoint: failed to get sessionID" >&2
+		echo "opencodex: failed to get sessionID (exit code: $status)" >&2
 		exit 1
 	}
 	exec opencode session export "$sid"

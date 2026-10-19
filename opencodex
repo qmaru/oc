@@ -16,7 +16,7 @@ export)
 
 	set +e
 	if [ "$debug" = 1 ]; then
-		echo "opencodex: debug output enabled (JSONL)" >&2
+		printf '%s\n' '{"type":"debug","message":"debug output enabled"}' >&2
 		opencode run "$@" --format json | tee "$tmp" >&2
 		status=${PIPESTATUS[0]}
 	else

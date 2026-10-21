@@ -14,23 +14,26 @@ export)
 	tmp="$(mktemp)"
 	trap 'rm -f "$tmp"' EXIT
 
-	set +e
 	if [ "$debug" = 1 ]; then
 		printf '%s\n' '{"type":"debug","message":"debug output enabled"}' >&2
-		opencode run "$@" --format json | tee "$tmp" >&2
-		status=${PIPESTATUS[0]}
-	else
-		opencode run "$@" --format json >"$tmp"
-		status=$?
 	fi
+
+	set +e
+	opencode run "$@" --format json >"$tmp"
+	status=$?
 	set -e
+
+	if [ "$debug" = 1 ]; then
+		cat "$tmp" >&2
+	fi
 
 	sid="$(jq -r 'select(.type == "step_start" and .sessionID != null) | .sessionID' "$tmp" | head -n1)"
 	[ -n "$sid" ] || {
 		echo "opencodex: failed to get sessionID (exit code: $status)" >&2
 		exit 1
 	}
-	exec opencode session export "$sid"
+	opencode session export "$sid" >"$tmp"
+	cat "$tmp"
 	;;
 *) exec opencode "$@" ;;
 esac

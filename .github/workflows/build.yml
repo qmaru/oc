@@ -29,12 +29,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Restore version cache
-        uses: actions/cache/restore@v6
-        with:
-          path: .opencode_version
-          key: opencode-version
-
       - name: Get upstream version
         id: upstream
         run: |
@@ -54,6 +48,14 @@ jobs:
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Upstream version: $VERSION"
+
+      - name: Restore version cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .opencode_version
+          key: opencode-version-${{ steps.upstream.outputs.version }}
+          restore-keys: |
+            opencode-version-
 
       - name: Compare version
         id: compare
@@ -81,7 +83,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: .opencode_version
-          key: opencode-version
+          key: opencode-version-${{ steps.upstream.outputs.version }}
 
   build:
     name: Build (${{ matrix.dir }})

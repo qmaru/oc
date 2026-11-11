@@ -1,6 +1,6 @@
 # Runtime
 
-- Alpine (with libstdc++)
+- Wolf (glibc)
 - POSIX shell
 - BusyBox utilities
 - Node.js 24

@@ -1,6 +1,6 @@
 # Runtime
 
-- Alpine
+- Wolf (glibc)
 - POSIX shell
 - BusyBox utilities
 

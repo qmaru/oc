@@ -27,12 +27,21 @@ export)
 		cat "$tmp" >&2
 	fi
 
+	if [ "$status" -ne 0 ]; then
+		echo "opencodex: opencode run failed (exit code: $status)" >&2
+		tail -n 1 "$tmp" | cut -c1-500 >&2
+		exit "$status"
+	fi
+
 	sid="$(jq -r 'select(.type == "step_start" and .sessionID != null) | .sessionID' "$tmp" | head -n1)"
 	[ -n "$sid" ] || {
-		echo "opencodex: failed to get sessionID (exit code: $status)" >&2
+		echo "opencodex: failed to get sessionID" >&2
 		exit 1
 	}
-	opencode session export "$sid" >"$tmp"
+	opencode session export "$sid" >"$tmp" || {
+		echo "opencodex: session export failed (sessionID: $sid)" >&2
+		exit 1
+	}
 	cat "$tmp"
 	;;
 *) exec opencode "$@" ;;

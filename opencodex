@@ -24,7 +24,7 @@ export)
 	set -e
 
 	if [ "$debug" = 1 ]; then
-		cat "$tmp" >&2
+		cut -c1-300 "$tmp" | head -n 100 >&2 || true
 	fi
 
 	if [ "$status" -ne 0 ]; then
